@@ -11,13 +11,18 @@ const express = require("express")
 const cors = require("cors")
 const bodyParser = require("body-parser")
 
+const corsOptions = {
+  origin: "https://simonboudreault.github.io/mongo-material-CRUD/#/database",
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+
 const api = express()
 
 let coll = undefined
 
 const PORT = process.env.PORT || 5000
 
-api.use(cors())
+api.use(cors(corsOptions))
 api.use(bodyParser.json())
 
 api.get("/", async (req, res) => {
