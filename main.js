@@ -22,7 +22,7 @@ let coll
 
 const PORT = process.env.PORT || 5000
 
-api.use(cors(corsOptions))
+api.use(cors())
 api.use(bodyParser.json())
 
 api.get("/", async (req, res) => {
