@@ -22,7 +22,7 @@ let coll
 
 const PORT = process.env.PORT || 5000
 
-api.use(cors())
+api.use(cors(corsOptions))
 api.use(bodyParser.json())
 
 api.get("/", async (req, res) => {
@@ -63,6 +63,7 @@ api.listen(PORT, () => console.log(`listening on port ${PORT}`))
 async function openConnection() {
   const connection = await client.connect()
   coll = await connection.db(databaseName).collection(collectionName)
+  console.log(coll)
 }
 openConnection()
 
