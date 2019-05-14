@@ -12,7 +12,7 @@ const cors = require("cors")
 const bodyParser = require("body-parser")
 
 const corsOptions = {
-  origin: "https://simonboudreault.github.io/mongo-material-CRUD/#/database",
+  origin: "https://simonboudreault.github.io",
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 }
 
