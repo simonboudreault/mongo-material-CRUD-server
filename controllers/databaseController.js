@@ -44,14 +44,14 @@ module.exports = {
     }
     if (!workingDB) {
       client = await new MongoClient(uri, { useNewUrlParser: true });
-      resetConnection();
+      await resetConnection();
       res.send({
         DB: true,
         msg: "connection turned on"
       });
     } else {
       client = await new MongoClient(badUri, { useNewUrlParser: true });
-      resetConnection();
+      await resetConnection();
       res.send({
         DB: false,
         msg: "connection turned off"
@@ -70,7 +70,11 @@ module.exports = {
 
   async fetchDocuments(req, res) {
     try {
-      const data = await coll.find().toArray();
+      const documents = await coll.find().toArray();
+      const data = {
+        db: workingDB,
+        documents: documents
+      };
       res.send(data);
     } catch (err) {
       res.status(500).send({
