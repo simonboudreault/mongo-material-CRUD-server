@@ -10,11 +10,17 @@ let workingDB = true;
 const databaseName = "sample_crud_material";
 const collectionName = "collection_0";
 
+const usersCollectionName = "_users";
+
 let coll;
+let usersCollection;
 
 (async function openConnection() {
   try {
     const connection = await client.connect();
+    usersCollection = await connection
+      .db(databaseName)
+      .collection(usersCollectionName);
     coll = await connection.db(databaseName).collection(collectionName);
   } catch (err) {
     console.error(err);
@@ -58,6 +64,49 @@ module.exports = {
       });
     }
     workingDB = !workingDB;
+  },
+
+  ///////////////////////////////
+  //                           //
+  //     Users  Connexion      //
+  //                           //
+  ///////////////////////////////
+
+  async findUser(req, res) {
+    try {
+      const user = await usersCollection.findOne({
+        email: req.body.email
+      });
+      res.send(user);
+    } catch (err) {
+      res.status(500).send({
+        error: "Unable to find user"
+      });
+    }
+  },
+
+  async register(req, res) {
+    try {
+      await usersCollection.insertOne(req.body);
+      res.send({
+        message: `hello ${req.body.email} your user was registered`
+      });
+    } catch (err) {
+      switch (err.code) {
+        case 11000:
+          res.status(500).send({
+            error: "This email is already in use"
+          });
+        case 64:
+          res.status(500).send({
+            error: "Write concern error"
+          });
+        default:
+          res.status(500).send({
+            error: "Unable to create the Document"
+          });
+      }
+    }
   },
 
   ///////////////////////////////
