@@ -1,42 +1,9 @@
-const MongoClient = require("mongodb").MongoClient;
 const ObjectId = require("mongodb").ObjectId;
-let badUri = "";
-let uri =
-  "mongodb+srv://material_crud_user:f7Vr3VPLKEmmFY9g@rapport01-brub3.mongodb.net/test?retryWrites=true";
-let client = new MongoClient(uri, { useNewUrlParser: true });
-
-let workingDB = true;
-
-const databaseName = "sample_crud_material";
-const collectionName = "collection_0";
-
-const usersCollectionName = "_users";
-
-let coll;
-let usersCollection;
-
-(async function openConnection() {
-  try {
-    const connection = await client.connect();
-    usersCollection = await connection
-      .db(databaseName)
-      .collection(usersCollectionName);
-    coll = await connection.db(databaseName).collection(collectionName);
-  } catch (err) {
-    console.error(err);
-  }
-})();
-
-async function resetConnection() {
-  client.close();
-  try {
-    const connection = await client.connect();
-    coll = await connection.db(databaseName).collection(collectionName);
-  } catch (err) {
-    console.error(err);
-  }
-}
-
+let database;
+// eslint-disable-next-line no-console
+require("./dbConnector").then(db => {
+  database = db;
+});
 module.exports = {
   ///////////////////////////////
   //                           //
@@ -68,49 +35,6 @@ module.exports = {
 
   ///////////////////////////////
   //                           //
-  //     Users  Connexion      //
-  //                           //
-  ///////////////////////////////
-
-  async findUser(req, res) {
-    try {
-      const user = await usersCollection.findOne({
-        email: req.body.email
-      });
-      res.send(user);
-    } catch (err) {
-      res.status(500).send({
-        error: "Unable to find user"
-      });
-    }
-  },
-
-  async register(req, res) {
-    try {
-      await usersCollection.insertOne(req.body);
-      res.send({
-        message: `hello ${req.body.email} your user was registered`
-      });
-    } catch (err) {
-      switch (err.code) {
-        case 11000:
-          res.status(500).send({
-            error: "This email is already in use"
-          });
-        case 64:
-          res.status(500).send({
-            error: "Write concern error"
-          });
-        default:
-          res.status(500).send({
-            error: "Unable to create the Document"
-          });
-      }
-    }
-  },
-
-  ///////////////////////////////
-  //                           //
   //     Send an array with    //
   //       every document      //
   //     in the collection     //
@@ -118,10 +42,12 @@ module.exports = {
   ///////////////////////////////
 
   async fetchDocuments(req, res) {
+    let name = req.query.coll;
+    let coll = database.collection(name);
     try {
       const documents = await coll.find().toArray();
       const data = {
-        db: workingDB,
+        db: true,
         documents: documents
       };
       res.send(data);
@@ -133,6 +59,8 @@ module.exports = {
   },
 
   async modifyDocument(req, res) {
+    let coll = database.collection(req.body.coll);
+    console.log(req.body);
     let selector = {
       _id: new ObjectId(req.body._id)
     };
@@ -150,6 +78,7 @@ module.exports = {
   },
 
   async createDocument(req, res) {
+    let coll = database.collection(req.body.coll);
     try {
       const data = await coll.insertOne(req.body.payload);
       res.send(data);
@@ -161,6 +90,7 @@ module.exports = {
   },
 
   async deleteDocument(req, res) {
+    let coll = database.collection(req.body.coll);
     let selector = { _id: new ObjectId(req.body._id) };
     try {
       const data = await coll.deleteOne(selector);

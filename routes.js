@@ -1,5 +1,6 @@
 const databaseController = require("./controllers/databaseController");
 const AuthenticationController = require("./controllers/AuthenticationController");
+const AuthenticationControllerPolicy = require("./policies/AuthenticationControllerPolicy");
 
 module.exports = api => {
   api.get("/connexion", databaseController.toggleConnexion);
@@ -10,9 +11,13 @@ module.exports = api => {
 
   api.post("/", databaseController.createDocument);
 
-  api.post("/register", databaseController.register);
+  api.post(
+    "/register",
+    AuthenticationControllerPolicy.register,
+    AuthenticationController.register
+  );
 
-  api.post("/login", databaseController.findUser);
+  api.post("/login", AuthenticationController.findUser);
 
   api.delete("/", databaseController.deleteDocument);
 };
