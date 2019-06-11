@@ -29,7 +29,7 @@ module.exports = {
   async fetchDocuments(req, res) {
     let coll = database.collection(req.query.coll);
     try {
-      if (req.query.isDbOn === "false") throw "";
+      if (req.query.isDbOn === "false") throw "Unable to get the Documents";
       const documents = await coll.find().toArray();
       const data = {
         db: true,
@@ -38,7 +38,7 @@ module.exports = {
       res.send(data);
     } catch (err) {
       res.status(500).send({
-        error: "Unable to get the Documents"
+        error: err
       });
     }
   },
@@ -60,12 +60,12 @@ module.exports = {
       [req.body.modifyer]: req.body.payload
     };
     try {
-      if (!req.body.isDbOn) throw "";
+      if (!req.body.isDbOn) throw "Unable to modify the Document";
       const data = await coll.updateOne(selector, modif);
       res.send(data);
     } catch (err) {
       res.status(500).send({
-        error: "Unable to modify the Document"
+        error: err
       });
     }
   },
