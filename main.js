@@ -2,14 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const test = "testing";
+const config = require("./config/config");
 
 const api = express();
-
-const PORT = process.env.PORT || 5000;
 
 api.use(cors());
 api.use(bodyParser.json({ limit: "1mb" }));
 
+require("./passport");
+
 require("./routes")(api);
 
-api.listen(PORT, () => console.log(`listening on port ${PORT}`));
+api.listen(config.port, () => console.log(`listening on port ${config.port}`));

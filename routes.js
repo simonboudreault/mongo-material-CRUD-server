@@ -1,15 +1,14 @@
 const databaseController = require("./controllers/databaseController");
 const AuthenticationController = require("./controllers/AuthenticationController");
 const AuthenticationControllerPolicy = require("./policies/AuthenticationControllerPolicy");
+const isAuthenticated = require("./policies/isAuthenticated");
 
 module.exports = api => {
-  api.get("/connexion", databaseController.toggleConnexion);
+  api.get("/", isAuthenticated, databaseController.fetchDocuments);
 
-  api.get("/", databaseController.fetchDocuments);
+  api.put("/", isAuthenticated, databaseController.modifyDocument);
 
-  api.put("/", databaseController.modifyDocument);
-
-  api.post("/", databaseController.createDocument);
+  api.post("/", isAuthenticated, databaseController.createDocument);
 
   api.post(
     "/register",
@@ -17,7 +16,7 @@ module.exports = api => {
     AuthenticationController.register
   );
 
-  api.post("/login", AuthenticationController.findUser);
+  api.post("/login", AuthenticationController.login);
 
-  api.delete("/", databaseController.deleteDocument);
+  api.delete("/", isAuthenticated, databaseController.deleteDocument);
 };

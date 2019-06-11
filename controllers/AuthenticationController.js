@@ -3,6 +3,34 @@ let database;
 require("./dbConnector").then(db => {
   database = db;
 });
+
+const jwt = require("jsonwebtoken");
+const config = require("../config/config");
+
+const Promise = require("bluebird");
+const bcrypt = Promise.promisifyAll(require("bcrypt-nodejs"));
+
+async function hashPassword(user) {
+  const SALT_FACTOR = 8;
+
+  let salt = await bcrypt.genSaltAsync(SALT_FACTOR);
+
+  let hash = await bcrypt.hashAsync(user.password, salt, null);
+
+  user.password = hash;
+}
+
+async function comparePassword(password, userPassword) {
+  return await bcrypt.compareAsync(password, userPassword);
+}
+
+function jwtSignUser(user) {
+  const ONE_WEEK = 60 * 60 * 24 * 7;
+  return jwt.sign(user, config.authentication.jwtSecret, {
+    expiresIn: ONE_WEEK
+  });
+}
+
 module.exports = {
   ///////////////////////////////
   //                           //
@@ -10,18 +38,29 @@ module.exports = {
   //                           //
   ///////////////////////////////
 
-  async findUser(req, res) {
-    console.log(req.body.email);
+  async login(req, res) {
     try {
-      const user = await database.collection("_users").findOne({
-        email: req.body.email
+      const { email, password } = req.body;
+      let user = req.body;
+
+      const dbUser = await database.collection("_users").findOne({
+        email: email
       });
-      if (!user) {
+      if (!dbUser) {
         res.status(403).send({
-          error: "Unable to find user"
+          error: "Incorrect login information"
+        });
+      }
+      const isPasswordValid = await comparePassword(password, dbUser.password);
+      if (!isPasswordValid) {
+        res.status(403).send({
+          error: "Incorrect login pass information"
         });
       } else {
-        res.send(user);
+        res.send({
+          user: dbUser,
+          token: jwtSignUser(dbUser)
+        });
       }
     } catch (err) {
       res.status(500).send({
@@ -32,9 +71,12 @@ module.exports = {
 
   async register(req, res) {
     try {
-      await database.collection("_users").insertOne(req.body);
+      let user = req.body;
+      await hashPassword(user);
+      await database.collection("_users").insertOne(user);
       res.send({
-        message: `hello ${req.body.email} your user was registered`
+        user: user,
+        token: jwtSignUser(user)
       });
     } catch (err) {
       switch (err.code) {

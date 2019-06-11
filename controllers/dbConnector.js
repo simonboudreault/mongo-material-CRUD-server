@@ -1,10 +1,7 @@
 const MongoClient = require("mongodb").MongoClient;
-let badUri = "";
 let uri =
   "mongodb+srv://material_crud_user:f7Vr3VPLKEmmFY9g@rapport01-brub3.mongodb.net/test?retryWrites=true";
 let client = new MongoClient(uri, { useNewUrlParser: true });
-
-let workingDB = true;
 
 const databaseName = "sample_crud_material";
 

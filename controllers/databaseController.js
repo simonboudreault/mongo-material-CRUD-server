@@ -1,38 +1,15 @@
 const ObjectId = require("mongodb").ObjectId;
 let database;
-// eslint-disable-next-line no-console
-require("./dbConnector").then(db => {
-  database = db;
-});
+require("./dbConnector")
+  .then(db => {
+    database = db;
+  })
+  .catch(err => {
+    if (err) {
+      console.log(err);
+    }
+  });
 module.exports = {
-  ///////////////////////////////
-  //                           //
-  //     Toggle Connexion      //
-  //                           //
-  ///////////////////////////////
-
-  async toggleConnexion(req, res) {
-    if (client.s.url) {
-      await client.close();
-    }
-    if (!workingDB) {
-      client = await new MongoClient(uri, { useNewUrlParser: true });
-      await resetConnection();
-      res.send({
-        DB: true,
-        msg: "connection turned on"
-      });
-    } else {
-      client = await new MongoClient(badUri, { useNewUrlParser: true });
-      await resetConnection();
-      res.send({
-        DB: false,
-        msg: "connection turned off"
-      });
-    }
-    workingDB = !workingDB;
-  },
-
   ///////////////////////////////
   //                           //
   //     Send an array with    //
@@ -42,9 +19,9 @@ module.exports = {
   ///////////////////////////////
 
   async fetchDocuments(req, res) {
-    let name = req.query.coll;
-    let coll = database.collection(name);
+    let coll = database.collection(req.query.coll);
     try {
+      if (req.query.isDbOn === "false") throw "";
       const documents = await coll.find().toArray();
       const data = {
         db: true,
@@ -60,7 +37,6 @@ module.exports = {
 
   async modifyDocument(req, res) {
     let coll = database.collection(req.body.coll);
-    console.log(req.body);
     let selector = {
       _id: new ObjectId(req.body._id)
     };
@@ -68,6 +44,7 @@ module.exports = {
       [req.body.modifyer]: req.body.payload
     };
     try {
+      if (!req.body.isDbOn) throw "";
       const data = await coll.updateOne(selector, modif);
       res.send(data);
     } catch (err) {
@@ -80,6 +57,7 @@ module.exports = {
   async createDocument(req, res) {
     let coll = database.collection(req.body.coll);
     try {
+      if (!req.body.isDbOn) throw "";
       const data = await coll.insertOne(req.body.payload);
       res.send(data);
     } catch (err) {
@@ -93,6 +71,7 @@ module.exports = {
     let coll = database.collection(req.body.coll);
     let selector = { _id: new ObjectId(req.body._id) };
     try {
+      if (!req.body.isDbOn) throw "";
       const data = await coll.deleteOne(selector);
       res.send(data);
     } catch (err) {
