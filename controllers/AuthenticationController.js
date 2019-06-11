@@ -1,5 +1,4 @@
 let database;
-// eslint-disable-next-line no-console
 require("./dbConnector").then(db => {
   database = db;
 });

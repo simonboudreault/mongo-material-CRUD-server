@@ -1,5 +1,13 @@
 const ObjectId = require("mongodb").ObjectId;
 let database;
+///////////////////////////////
+//                           //
+//    import the connection  //
+//      and set database     //
+//     to the connection     //
+//                           //
+///////////////////////////////
+
 require("./dbConnector")
   .then(db => {
     database = db;
@@ -35,6 +43,14 @@ module.exports = {
     }
   },
 
+  ///////////////////////////////////////
+  //                                   //
+  //           coll.updateOne          //
+  //      on the user's collection     //
+  //use for unset key and modify value //
+  //                                   //
+  ///////////////////////////////////////
+
   async modifyDocument(req, res) {
     let coll = database.collection(req.body.coll);
     let selector = {
@@ -54,45 +70,46 @@ module.exports = {
     }
   },
 
+  ///////////////////////////////
+  //                           //
+  //         insertOne         //
+  //           on the          //
+  //     user's collection     //
+  //                           //
+  ///////////////////////////////
+
   async createDocument(req, res) {
     let coll = database.collection(req.body.coll);
     try {
-      if (!req.body.isDbOn) throw "";
+      if (!req.body.isDbOn) throw "Unable to create the Document";
       const data = await coll.insertOne(req.body.payload);
       res.send(data);
     } catch (err) {
       res.status(500).send({
-        error: "Unable to create the Document"
+        error: err
       });
     }
   },
+
+  ///////////////////////////////
+  //                           //
+  //         deleteOne         //
+  //                           //
+  //                           //
+  //                           //
+  ///////////////////////////////
 
   async deleteDocument(req, res) {
     let coll = database.collection(req.body.coll);
     let selector = { _id: new ObjectId(req.body._id) };
     try {
-      if (!req.body.isDbOn) throw "";
+      if (!req.body.isDbOn) throw "Unable to delete the Document";
       const data = await coll.deleteOne(selector);
       res.send(data);
     } catch (err) {
       res.status(500).send({
-        error: "Unable to delete the Document"
+        error: err
       });
     }
   }
-
-  ///////////////////////////////
-  //                           //
-  //     MongoDB Reference     //
-  //                           //
-  ///////////////////////////////
-
-  // client.connect(err => {
-  //   const collection = client
-  //     .db("<database_name>")
-  //     .collection("<collection_name>")
-  //   // perform actions on the collection object
-
-  //   client.close()
-  // })
 };
